@@ -1,5 +1,5 @@
 from models.Model import Product,Unit,Group,User
-from flask import render_template,jsonify,request
+from flask import render_template,jsonify,request,url_for
 from flask_restful import Api, Resource,reqparse
 
 class productController(Resource):
@@ -26,12 +26,16 @@ class productController(Resource):
         product.save()
         return "Success"
 
-    def delete(self, pr_id):
-        Product.objects(id=pr_id).delete()
-        return '', 204
-
-    def put(self, pr_id):
+    def delete(self):
         parser = reqparse.RequestParser()
+        parser.add_argument('pr_id')
+        args = parser.parse_args()
+        Product.objects(id=str(args['pr_id'])).delete()
+        return "Delete Success"
+
+    def put(self):
+        parser = reqparse.RequestParser()
+        parser.add_argument('pr_id')
         parser.add_argument('pname')
         parser.add_argument('pdesc')
         parser.add_argument('pprice')
@@ -42,7 +46,7 @@ class productController(Resource):
         g_id = Group.objects.get(id=args['gid'])
         un_id = Unit.objects.get(id=args['unid'])
         us_id = User.objects.get(id=args['usid'])
-        prd = Product.objects.get(id=pr_id)
+        prd = Product.objects.get(id=str(args['pr_id']))
         prd.pname = args['pname']
         prd.pdesc = args['pdesc']
         prd.pprice = args['pprice']
@@ -50,7 +54,7 @@ class productController(Resource):
         prd.unid = un_id
         prd.usid = us_id
         prd.save()
-        return "Success"
+        return "Update Success"
 
 class unitController(Resource):
     def get(self):
@@ -69,20 +73,24 @@ class unitController(Resource):
         unit.save()
         return "Success"
 
-    def delete(self, ut_id):
-        Unit.objects(id=ut_id).delete()
-        return '', 204
-
-    def put(self, ut_id):
+    def delete(self):
         parser = reqparse.RequestParser()
+        parser.add_argument('ut_id')
+        args = parser.parse_args()
+        Unit.objects(id=str(args['ut_id'])).delete()
+        return "Delete Success"
+
+    def put(self):
+        parser = reqparse.RequestParser()
+        parser.add_argument('ut_id')
         parser.add_argument('utname')
         parser.add_argument('utdesc')
         args = parser.parse_args()
-        unt = Unit.objects.get(id=ut_id)
+        unt = Unit.objects.get(id=str(args['ut_id']))
         unt.utname = args['utname']
         unt.utdesc = args['utdesc']
         unt.save()
-        return "Success"
+        return "Update Success"
 
 class groupController(Resource):
     def get(self):
@@ -101,18 +109,22 @@ class groupController(Resource):
         group.save()
         return "Success"
 
-    def delete(self,gr_id):
-        Group.objects(id=gr_id).delete()
-        return '', 204
-
-    def put(self,gr_id):
+    def delete(self):
         parser = reqparse.RequestParser()
+        parser.add_argument('gr_id')
+        args = parser.parse_args()
+        Group.objects(id=str(args['gr_id'])).delete()
+        return "Delete Success"
+
+    def put(self):
+        parser = reqparse.RequestParser()
+        parser.add_argument('gr_id')
         parser.add_argument('gname')
         parser.add_argument('gdesc')
         args = parser.parse_args()
-        grp = Group.objects.get(id=gr_id)
+        grp = Group.objects.get(id=str(args['gr_id']))
         grp.gname = args['gname']
         grp.gdesc = args['gdesc']
         grp.save()
-        return "Success"
+        return "Update Success"
 

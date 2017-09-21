@@ -1,7 +1,7 @@
 from models.Model import User
 from flask import render_template,jsonify,request
 from flask_restful import Api, Resource,reqparse
-
+from flask_mail import Mail,Message
 class userController(Resource):
     def get(self):
         users=User.objects
@@ -17,31 +17,52 @@ class userController(Resource):
         parser.add_argument('uconnum')
         parser.add_argument('uemail')
         parser.add_argument('upass')
+        parser.add_argument('admin')
         args = parser.parse_args()
-        user = User(uname=args['uname'],uadd=args['uadd'],uconnum=args['uconnum'], uemail=args['uemail'],upass=args['upass'])
+        #us1 = User()
+        user = User()
+        user.uname=args['uname']
+        user.uadd=args['uadd']
+        user.uconnum=args['uconnum']
+        user.uemail=args['uemail']
+        user.encrypt_set_password(args['upass'])
+        #user.admin=str(args['admin'])
         user.save()
         return "Success"
 
-    def delete(self, us_id):
-        User.objects(id=us_id).delete()
-        return '', 204
-
-    def put(self, us_id):
+    def delete(self):
         parser = reqparse.RequestParser()
+        parser.add_argument('us_id')
+        args = parser.parse_args()
+        User.objects(id=str(args['us_id'])).delete()
+        return "Delete Success"
+
+    def put(self):
+        parser = reqparse.RequestParser()
+        parser.add_argument('us_id')
         parser.add_argument('uname')
         parser.add_argument('uadd')
         parser.add_argument('uconnum')
         parser.add_argument('uemail')
         parser.add_argument('upass')
+        parser.add_argument('admin')
         args = parser.parse_args()
-        usr = User.objects.get(id=us_id)
+        usr = User.objects.get(id=str(args['us_id']))
         usr.uname = args['uname']
         usr.uadd = args['uadd']
         usr.uconnum=args['uconnum']
         usr.uemail=args['uemail']
         usr.upass=args['upass']
+        print str(args['admin'])
+        if(str(args['admin'])=="false"):
+            usr.admin=False
+        elif(str(args['admin'])=="true"):
+            usr.admin=True
+        else:
+            usr.admin = False
+        #usr.IsAdmin =
         usr.save()
-        return "Success"
+        return "Update Success"
 
 class LogInController(Resource):
     def post(self):
@@ -49,8 +70,13 @@ class LogInController(Resource):
         parser.add_argument('uname')
         parser.add_argument('upass')
         args = parser.parse_args()
-        one=User.objects(uname=args['uname'],upass=args['upass']).count()
-        if one :
-            return {'result': args['uname']}
+        usr = User.objects(uname=args['uname']).first()
+        #one=User.objects(uname=args['uname'],upass=).count()
+        if usr and usr.verify_password(str(args['upass'])):
+            #usrobj = User.objects.get(uname=args['uname'])
+            if usr.admin :
+                return {"Admin": args['uname']}
+            else:
+                return {'Normal User': args['uname']}
         else:
             return "Sorry"
